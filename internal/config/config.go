@@ -10,14 +10,15 @@ type Config struct {
 		SSLMode  string
 	}
 	JWT struct {
-		Secret string
+		Secret    string
+		ExpiresIn int
 	}
 }
 
 func Load() *Config {
 	cfg := &Config{}
 
-	cfg.DB.Host = "localhost"
+	cfg.DB.Host = "postgres"
 	cfg.DB.Port = "5432"
 	cfg.DB.User = "gorent"
 	cfg.DB.Password = "gorentpass"
@@ -25,6 +26,7 @@ func Load() *Config {
 	cfg.DB.SSLMode = "disable"
 
 	cfg.JWT.Secret = "jwt-key"
+	cfg.JWT.ExpiresIn = 24
 
 	return cfg
 }
