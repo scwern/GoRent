@@ -20,13 +20,15 @@ func main() {
 	defer database.Close()
 
 	userRepo := repository.NewUserRepository(database)
+	carRepo := repository.NewCarRepository(database)
 
 	jwtManager := jwt.NewManager(cfg.JWT.Secret, cfg.JWT.ExpiresIn)
 
 	authService := service.NewAuthService(userRepo, jwtManager)
 	adminService := service.NewAdminService(userRepo)
+	carService := service.NewCarService(carRepo)
 
-	router := api.SetupRouter(authService, adminService, jwtManager)
+	router := api.SetupRouter(authService, adminService, carService, jwtManager)
 
 	if err := router.Run(":8080"); err != nil {
 		log.Fatalf("failed to start server: %v", err)
