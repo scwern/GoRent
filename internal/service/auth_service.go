@@ -11,8 +11,8 @@ import (
 )
 
 type AuthService interface {
-	Register(ctx context.Context, req *user.RegisterRequest) (*user.User, error)
-	Login(ctx context.Context, req *user.LoginRequest) (*user.LoginResponse, error)
+	Register(ctx context.Context, registerReq *user.RegisterRequest) (*user.User, error)
+	Login(ctx context.Context, loginReq *user.LoginRequest) (*user.LoginResponse, error)
 }
 
 type authService struct {
@@ -27,21 +27,21 @@ func NewAuthService(userRepo repository.UserRepository, jwt jwt.Manager) AuthSer
 	}
 }
 
-func (s *authService) Register(ctx context.Context, req *user.RegisterRequest) (*user.User, error) {
-	existingUser, err := s.userRepo.GetByEmail(ctx, req.Email)
+func (s *authService) Register(ctx context.Context, registerReq *user.RegisterRequest) (*user.User, error) {
+	existingUser, err := s.userRepo.GetByEmail(ctx, registerReq.Email)
 	if err == nil && existingUser != nil {
 		return nil, errors.New("user with this email already exists")
 	}
 
-	hashedPassword, err := password.Hash(req.Password)
+	hashedPassword, err := password.Hash(registerReq.Password)
 	if err != nil {
 		return nil, err
 	}
 
 	newUser := &user.User{
 		ID:           uuid.New().String(),
-		Name:         req.Name,
-		Email:        req.Email,
+		Name:         registerReq.Name,
+		Email:        registerReq.Email,
 		PasswordHash: hashedPassword,
 		Role:         user.ClientRole,
 	}
@@ -53,13 +53,13 @@ func (s *authService) Register(ctx context.Context, req *user.RegisterRequest) (
 	return newUser, nil
 }
 
-func (s *authService) Login(ctx context.Context, req *user.LoginRequest) (*user.LoginResponse, error) {
-	u, err := s.userRepo.GetByEmail(ctx, req.Email)
+func (s *authService) Login(ctx context.Context, loginReq *user.LoginRequest) (*user.LoginResponse, error) {
+	u, err := s.userRepo.GetByEmail(ctx, loginReq.Email)
 	if err != nil {
 		return nil, errors.New("invalid credentials")
 	}
 
-	if !password.Verify(u.PasswordHash, req.Password) {
+	if !password.Verify(u.PasswordHash, loginReq.Password) {
 		return nil, errors.New("invalid credentials")
 	}
 

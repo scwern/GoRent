@@ -11,12 +11,14 @@ import (
 func SetupRouter(
 	authService service.AuthService,
 	adminService service.AdminService,
+	carService service.CarService,
 	jwtManager jwt.Manager,
 ) *gin.Engine {
 	router := gin.Default()
 
 	authHandler := handlers.NewAuthHandler(authService)
 	adminHandler := handlers.NewAdminHandler(adminService)
+	carHandler := handlers.NewCarHandler(carService)
 
 	authMiddleware := middleware.AuthMiddleware(jwtManager)
 
@@ -35,6 +37,20 @@ func SetupRouter(
 				"role":    userRole,
 			})
 		})
+	}
+
+	carGroup := router.Group("/cars")
+	{
+		carGroup.GET("", carHandler.GetAllCars)
+		carGroup.GET("/:id", carHandler.GetCar)
+	}
+
+	protectedCarGroup := router.Group("/cars")
+	protectedCarGroup.Use(authMiddleware, middleware.RoleMiddleware("manager", "admin"))
+	{
+		protectedCarGroup.POST("", carHandler.CreateCar)
+		protectedCarGroup.PUT("/:id", carHandler.UpdateCar)
+		protectedCarGroup.DELETE("/:id", carHandler.DeleteCar)
 	}
 
 	adminGroup := router.Group("/admin")
