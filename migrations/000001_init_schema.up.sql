@@ -9,6 +9,15 @@ CREATE TABLE users (
                        role user_role NOT NULL DEFAULT 'client'
 );
 
+INSERT INTO users (id, name, email, password_hash, role)
+VALUES (
+           '11111111-1111-1111-1111-111111111111',
+           'System Admin',
+           'admin@example.com',
+           '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+           'admin'
+       );
+
 CREATE TABLE cars (
                       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                       model VARCHAR(255) NOT NULL,
