@@ -12,6 +12,7 @@ func SetupRouter(
 	authService service.AuthService,
 	adminService service.AdminService,
 	carService service.CarService,
+	rentalService service.RentalService,
 	jwtManager jwt.Manager,
 ) *gin.Engine {
 	router := gin.Default()
@@ -19,6 +20,7 @@ func SetupRouter(
 	authHandler := handlers.NewAuthHandler(authService)
 	adminHandler := handlers.NewAdminHandler(adminService)
 	carHandler := handlers.NewCarHandler(carService)
+	rentalHandler := handlers.NewRentalHandler(rentalService)
 
 	authMiddleware := middleware.AuthMiddleware(jwtManager)
 
@@ -51,6 +53,21 @@ func SetupRouter(
 		protectedCarGroup.POST("", carHandler.CreateCar)
 		protectedCarGroup.PUT("/:id", carHandler.UpdateCar)
 		protectedCarGroup.DELETE("/:id", carHandler.DeleteCar)
+	}
+
+	rentalGroup := router.Group("/rentals")
+	rentalGroup.Use(authMiddleware)
+	{
+		rentalGroup.POST("", rentalHandler.CreateRental)
+		rentalGroup.GET("", rentalHandler.GetUserRentals)
+		rentalGroup.GET("/:id", rentalHandler.GetRental)
+		rentalGroup.PUT("/:id/cancel", rentalHandler.CancelRental)
+	}
+
+	managerRentalGroup := router.Group("/rentals")
+	managerRentalGroup.Use(authMiddleware, middleware.RoleMiddleware("manager", "admin"))
+	{
+		managerRentalGroup.PUT("/:id/approve", rentalHandler.ApproveRental)
 	}
 
 	adminGroup := router.Group("/admin")
