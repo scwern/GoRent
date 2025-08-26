@@ -10,7 +10,7 @@ import (
 )
 
 type AdminService interface {
-	ChangeUserRole(ctx context.Context, userID string, req *user.ChangeRoleRequest) error
+	ChangeUserRole(ctx context.Context, userID string, changeRoleReq *user.ChangeRoleRequest) error
 	ListUsers(ctx context.Context) ([]*user.User, error)
 }
 
@@ -24,13 +24,13 @@ func NewAdminService(userRepo repository.UserRepository) AdminService {
 	}
 }
 
-func (s *adminService) ChangeUserRole(ctx context.Context, userID string, req *user.ChangeRoleRequest) error {
+func (s *adminService) ChangeUserRole(ctx context.Context, userID string, changeRoleReq *user.ChangeRoleRequest) error {
 	u, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		return errors.New("user not found")
 	}
 
-	return s.userRepo.UpdateRole(ctx, u.ID, req.Role)
+	return s.userRepo.UpdateRole(ctx, u.ID, changeRoleReq.Role)
 }
 
 func (s *adminService) ListUsers(ctx context.Context) ([]*user.User, error) {
