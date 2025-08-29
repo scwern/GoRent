@@ -15,6 +15,18 @@ func NewAdminHandler(adminService service.AdminService) *AdminHandler {
 	return &AdminHandler{adminService: adminService}
 }
 
+// ChangeUserRole godoc
+// @Summary      Сменить роль пользователя
+// @Description  Доступно только admin
+// @Tags         admin
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Param        id      path  string                  true  "ID пользователя"
+// @Param        request body  user.ChangeRoleRequest  true  "Новая роль"
+// @Success      204
+// @Failure      400  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Router       /admin/users/{id}/role [put]
 func (h *AdminHandler) ChangeUserRole(c *gin.Context) {
 	userID := c.Param("id")
 
@@ -33,6 +45,15 @@ func (h *AdminHandler) ChangeUserRole(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ListUsers godoc
+// @Summary      Получить список пользователей
+// @Description  Доступно только admin
+// @Tags         admin
+// @Security     ApiKeyAuth
+// @Produce      json
+// @Success      200  {array}  object
+// @Failure      403  {object}  map[string]string
+// @Router       /admin/users [get]
 func (h *AdminHandler) ListUsers(c *gin.Context) {
 	users, err := h.adminService.ListUsers(c.Request.Context())
 	if err != nil {
