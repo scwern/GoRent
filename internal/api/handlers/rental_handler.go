@@ -16,6 +16,18 @@ func NewRentalHandler(rentalService service.RentalService) *RentalHandler {
 	return &RentalHandler{rentalService: rentalService}
 }
 
+// CreateRental godoc
+// @Summary      Создать аренду
+// @Description  Создает новую аренду автомобиля
+// @Tags         rentals
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        request  body  rental.CreateRequest  true  "Данные аренды"
+// @Success      201      {object}  rental.Response
+// @Failure      400      {object}  map[string]string
+// @Failure      403      {object}  map[string]string
+// @Router       /rentals [post]
 func (h *RentalHandler) CreateRental(c *gin.Context) {
 	var input rental.CreateRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -44,6 +56,14 @@ func (h *RentalHandler) CreateRental(c *gin.Context) {
 	c.JSON(http.StatusCreated, createdRental)
 }
 
+// GetUserRentals godoc
+// @Summary      Получить аренды пользователя
+// @Tags         rentals
+// @Security     ApiKeyAuth
+// @Produce      json
+// @Success      200  {array}  rental.Response
+// @Failure      401  {object}  map[string]string
+// @Router       /rentals [get]
 func (h *RentalHandler) GetUserRentals(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -66,6 +86,17 @@ func (h *RentalHandler) GetUserRentals(c *gin.Context) {
 	c.JSON(http.StatusOK, rentals)
 }
 
+// GetRental godoc
+// @Summary      Получить аренду по ID
+// @Tags         rentals
+// @Security     ApiKeyAuth
+// @Produce      json
+// @Param        id  path  string  true  "ID аренды"
+// @Success      200  {object}  rental.Response
+// @Failure      400  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Router       /rentals/{id} [get]
 func (h *RentalHandler) GetRental(c *gin.Context) {
 	rentalID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -98,6 +129,16 @@ func (h *RentalHandler) GetRental(c *gin.Context) {
 	c.JSON(http.StatusOK, rental)
 }
 
+// CancelRental godoc
+// @Summary      Отменить аренду
+// @Description  Отменяет аренду (только свою)
+// @Tags         rentals
+// @Security     ApiKeyAuth
+// @Param        id  path  string  true  "ID аренды"
+// @Success      204
+// @Failure      403  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Router       /rentals/{id}/cancel [put]
 func (h *RentalHandler) CancelRental(c *gin.Context) {
 	rentalID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -129,6 +170,16 @@ func (h *RentalHandler) CancelRental(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ApproveRental godoc
+// @Summary      Подтвердить аренду
+// @Description  Доступно только manager и admin
+// @Tags         rentals
+// @Security     ApiKeyAuth
+// @Param        id  path  string  true  "ID аренды"
+// @Success      200
+// @Failure      400  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Router       /rentals/{id}/approve [put]
 func (h *RentalHandler) ApproveRental(c *gin.Context) {
 	rentalID, err := uuid.Parse(c.Param("id"))
 	if err != nil {

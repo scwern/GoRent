@@ -17,6 +17,18 @@ func NewCarHandler(carService service.CarService) *CarHandler {
 	return &CarHandler{carService: carService}
 }
 
+// CreateCar godoc
+// @Summary      Создать автомобиль
+// @Description  Доступно только manager и admin
+// @Tags         cars
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        request  body  car.CreateRequest  true  "Данные автомобиля"
+// @Success      201      {object}  car.Response
+// @Failure      400      {object}  map[string]string
+// @Failure      403      {object}  map[string]string
+// @Router       /cars [post]
 func (h *CarHandler) CreateCar(c *gin.Context) {
 	var input car.CreateRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -33,6 +45,15 @@ func (h *CarHandler) CreateCar(c *gin.Context) {
 	c.JSON(http.StatusCreated, createdCar)
 }
 
+// GetCar godoc
+// @Summary      Получить автомобиль по ID
+// @Tags         cars
+// @Produce      json
+// @Param        id  path  string  true  "ID автомобиля"
+// @Success      200  {object}  car.Response
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Router       /cars/{id} [get]
 func (h *CarHandler) GetCar(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -49,6 +70,17 @@ func (h *CarHandler) GetCar(c *gin.Context) {
 	c.JSON(http.StatusOK, carItem)
 }
 
+// GetAllCars godoc
+// @Summary      Получить список автомобилей
+// @Description  Возвращает список автомобилей с возможностью фильтрации
+// @Tags         cars
+// @Produce      json
+// @Param        available   query  bool    false  "Фильтр по доступности"
+// @Param        brand       query  string  false  "Фильтр по бренду"
+// @Param        min_price   query  number  false  "Минимальная цена"
+// @Param        max_price   query  number  false  "Максимальная цена"
+// @Success      200         {array}  car.Response
+// @Router       /cars [get]
 func (h *CarHandler) GetAllCars(c *gin.Context) {
 	filters := make(map[string]interface{})
 
@@ -81,6 +113,19 @@ func (h *CarHandler) GetAllCars(c *gin.Context) {
 	c.JSON(http.StatusOK, cars)
 }
 
+// UpdateCar godoc
+// @Summary      Обновить автомобиль
+// @Description  Доступно только manager и admin
+// @Tags         cars
+// @Security     ApiKeyAuth
+// @Accept       json
+// @Produce      json
+// @Param        id       path  string            true  "ID автомобиля"
+// @Param        request  body  car.UpdateRequest true  "Данные для обновления"
+// @Success      200      {object}  car.Response
+// @Failure      400      {object}  map[string]string
+// @Failure      403      {object}  map[string]string
+// @Router       /cars/{id} [put]
 func (h *CarHandler) UpdateCar(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -103,6 +148,16 @@ func (h *CarHandler) UpdateCar(c *gin.Context) {
 	c.JSON(http.StatusOK, updatedCar)
 }
 
+// DeleteCar godoc
+// @Summary      Удалить автомобиль
+// @Description  Доступно только manager и admin
+// @Tags         cars
+// @Security     ApiKeyAuth
+// @Param        id  path  string  true  "ID автомобиля"
+// @Success      204
+// @Failure      400  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Router       /cars/{id} [delete]
 func (h *CarHandler) DeleteCar(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
