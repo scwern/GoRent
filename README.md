@@ -1,4 +1,4 @@
-# 🚗 GoRent
+# GoRent
 
 [![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://golang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql)](https://www.postgresql.org/)
@@ -7,7 +7,7 @@
 
 Сервис аренды автомобилей на Go с автодокументацией через Swagger.
 
-## 🚀 Быстрый старт
+## Быстрый старт
 
 ```bash
 Клонирование и запуск
