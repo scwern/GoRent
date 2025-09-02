@@ -6,7 +6,7 @@
 
 ```bash
 # Клонирование и запуск
-git clone https://github.com/scwern/gorent.git
+git clone https://github.com/scwern/GoRent.git
 cd gorent
 docker-compose up -d
 
