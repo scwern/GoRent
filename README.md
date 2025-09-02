@@ -9,23 +9,21 @@
 git clone https://github.com/scwern/GoRent.git
 cd gorent
 docker-compose up -d
+```
 
 Доступ после запуска:
 
-API: http://localhost:8080
+* **API:** [http://localhost:8080](http://localhost:8080)
+* **Swagger Docs:** [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+* **База данных:** 5432 (PostgreSQL)
 
-Swagger Docs: http://localhost:8080/swagger/index.html
+## API возможности
 
-База данных: 5432 (PostgreSQL)
+* Аутентификация (JWT через `pkg/jwt`)
+* Управление автомобилями (добавление, поиск, бронь)
+* История аренды пользователя
+* Миграции БД (`migrations`)
 
-API возможности
-Аутентификация (JWT через pkg/jwt)
+## Конфигурация
 
-Управление автомобилями (добавление, поиск, бронь)
-
-История аренды пользователя
-
-Миграции БД (migrations)
-
-Конфигурация
-Настройки через переменные окружения (internal/config)
+* Настройки через переменные окружения (`internal/config`)
