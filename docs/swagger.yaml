@@ -1,0 +1,737 @@
+basePath: /
+definitions:
+  car.CreateRequest:
+    properties:
+      brand:
+        maxLength: 50
+        minLength: 1
+        type: string
+      model:
+        maxLength: 100
+        minLength: 1
+        type: string
+      price_per_day:
+        type: number
+      year:
+        maximum: 2025
+        minimum: 1900
+        type: integer
+    required:
+    - brand
+    - model
+    - price_per_day
+    - year
+    type: object
+  car.Response:
+    properties:
+      brand:
+        type: string
+      id:
+        type: string
+      is_available:
+        type: boolean
+      model:
+        type: string
+      price_per_day:
+        type: number
+      year:
+        type: integer
+    type: object
+  car.UpdateRequest:
+    properties:
+      brand:
+        maxLength: 50
+        minLength: 1
+        type: string
+      is_available:
+        type: boolean
+      model:
+        maxLength: 100
+        minLength: 1
+        type: string
+      price_per_day:
+        type: number
+      year:
+        maximum: 2025
+        minimum: 1900
+        type: integer
+    type: object
+  rental.CreateRequest:
+    properties:
+      car_id:
+        type: string
+      end_date:
+        type: string
+      start_date:
+        type: string
+    required:
+    - car_id
+    - end_date
+    - start_date
+    type: object
+  rental.Response:
+    properties:
+      car_id:
+        type: string
+      created_at:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: string
+      start_date:
+        type: string
+      status:
+        $ref: '#/definitions/rental.Status'
+      total_price:
+        type: number
+      user_id:
+        type: string
+    type: object
+  rental.Status:
+    enum:
+    - pending
+    - active
+    - completed
+    - canceled
+    type: string
+    x-enum-varnames:
+    - StatusPending
+    - StatusActive
+    - StatusCompleted
+    - StatusCanceled
+  user.ChangeRoleRequest:
+    properties:
+      role:
+        allOf:
+        - $ref: '#/definitions/user.Role'
+        enum:
+        - admin
+        - manager
+        - client
+    required:
+    - role
+    type: object
+  user.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  user.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/user.User'
+    type: object
+  user.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  user.Role:
+    enum:
+    - admin
+    - manager
+    - client
+    type: string
+    x-enum-varnames:
+    - AdminRole
+    - ManagerRole
+    - ClientRole
+  user.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      role:
+        $ref: '#/definitions/user.Role'
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API системы аренды автомобилей
+  title: GoRent API
+  version: "1.0"
+paths:
+  /admin/users:
+    get:
+      description: Доступно только admin
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: object
+            type: array
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить список пользователей
+      tags:
+      - admin
+  /admin/users/{id}/role:
+    put:
+      consumes:
+      - application/json
+      description: Доступно только admin
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Новая роль
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.ChangeRoleRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Сменить роль пользователя
+      tags:
+      - admin
+  /analytics/popular-brands:
+    get:
+      description: Возвращает самые популярные бренды по доходу
+      parameters:
+      - description: Начальная дата (RFC3339)
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Конечная дата (RFC3339)
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: Лимит результатов
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить популярные бренды
+      tags:
+      - analytics
+  /analytics/profit:
+    get:
+      description: Возвращает суммарную прибыль за период
+      parameters:
+      - description: Начальная дата (RFC3339)
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Конечная дата (RFC3339)
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить прибыль
+      tags:
+      - analytics
+  /analytics/stats:
+    get:
+      description: Возвращает общую статистику по арендам
+      parameters:
+      - description: Начальная дата (RFC3339)
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Конечная дата (RFC3339)
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить статистику аренд
+      tags:
+      - analytics
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Вход в систему, возвращает JWT токен
+      parameters:
+      - description: Данные входа
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Авторизация пользователя
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя с ролью client
+      parameters:
+      - description: Данные регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/user.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация пользователя
+      tags:
+      - auth
+  /cars:
+    get:
+      description: Возвращает список автомобилей с возможностью фильтрации
+      parameters:
+      - description: Фильтр по доступности
+        in: query
+        name: available
+        type: boolean
+      - description: Фильтр по бренду
+        in: query
+        name: brand
+        type: string
+      - description: Минимальная цена
+        in: query
+        name: min_price
+        type: number
+      - description: Максимальная цена
+        in: query
+        name: max_price
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/car.Response'
+            type: array
+      summary: Получить список автомобилей
+      tags:
+      - cars
+    post:
+      consumes:
+      - application/json
+      description: Доступно только manager и admin
+      parameters:
+      - description: Данные автомобиля
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/car.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/car.Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Создать автомобиль
+      tags:
+      - cars
+  /cars/{id}:
+    delete:
+      description: Доступно только manager и admin
+      parameters:
+      - description: ID автомобиля
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Удалить автомобиль
+      tags:
+      - cars
+    get:
+      parameters:
+      - description: ID автомобиля
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/car.Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить автомобиль по ID
+      tags:
+      - cars
+    put:
+      consumes:
+      - application/json
+      description: Доступно только manager и admin
+      parameters:
+      - description: ID автомобиля
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/car.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/car.Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Обновить автомобиль
+      tags:
+      - cars
+  /rentals:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/rental.Response'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить аренды пользователя
+      tags:
+      - rentals
+    post:
+      consumes:
+      - application/json
+      description: Создает новую аренду автомобиля
+      parameters:
+      - description: Данные аренды
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/rental.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/rental.Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Создать аренду
+      tags:
+      - rentals
+  /rentals/{id}:
+    get:
+      parameters:
+      - description: ID аренды
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rental.Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить аренду по ID
+      tags:
+      - rentals
+  /rentals/{id}/approve:
+    put:
+      description: Доступно только manager и admin
+      parameters:
+      - description: ID аренды
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Подтвердить аренду
+      tags:
+      - rentals
+  /rentals/{id}/cancel:
+    put:
+      description: Отменяет аренду (только свою)
+      parameters:
+      - description: ID аренды
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Отменить аренду
+      tags:
+      - rentals
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
